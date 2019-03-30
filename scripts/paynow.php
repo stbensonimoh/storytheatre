@@ -13,137 +13,137 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// echo json_encode($_POST);
-//pull in the database
-require '../config.php';
-require './Paystack.php';
-require './DB.php';
+echo json_encode($_POST);
+// //pull in the database
+// require '../config.php';
+// require './Paystack.php';
+// require './DB.php';
 
-$currency = "NGN";
-$amount = 36200 * 100;
+// $currency = "NGN";
+// $amount = 36200 * 100;
 
-// Capture Post Data that is coming from the form
-$firstName = $_POST['firstName'];
-$lastName = $_POST['lastName'];
-$email = $_POST['email'];
-$phone = $_POST['phone'];
-$country = $_POST['country'];
-$occupation = $_POST['occupation'];
-$organisation = $_POST['organisation'];
-$member = $_POST['member'];
-$referringChannel = $_POST['referringChannel'];
-$firstConference = $_POST['firstConference'];
-$referrer = $_POST['referrer'];
+// // Capture Post Data that is coming from the form
+// $firstName = $_POST['firstName'];
+// $lastName = $_POST['lastName'];
+// $email = $_POST['email'];
+// $phone = $_POST['phone'];
+// $country = $_POST['country'];
+// $occupation = $_POST['occupation'];
+// $organisation = $_POST['organisation'];
+// $member = $_POST['member'];
+// $referringChannel = $_POST['referringChannel'];
+// $firstConference = $_POST['firstConference'];
+// $referrer = $_POST['referrer'];
 
 
-if ($country !== "Nigeria") {
-    $currency = "USD";
-}
+// if ($country !== "Nigeria") {
+//     $currency = "USD";
+// }
 
-if ($currency === "USD") {
-    $amount = 100 * 100;
-}
+// if ($currency === "USD") {
+//     $amount = 100 * 100;
+// }
 
-$details = array(
-    "firstName" => $firstName,
-    "lastName" => $lastName,
-    "email" => $_POST['email'],
-    "phone" => $phone,
-    "country" => $country,
-    "occupation" => $occupation,
-    "organisation" => $organisation,
-    "member" => $member,
-    "referringChannel" => $referringChannel,
-    "firstConference" => $firstConference,
-    "referrer" => $referrer
-);
+// $details = array(
+//     "firstName" => $firstName,
+//     "lastName" => $lastName,
+//     "email" => $_POST['email'],
+//     "phone" => $phone,
+//     "country" => $country,
+//     "occupation" => $occupation,
+//     "organisation" => $organisation,
+//     "member" => $member,
+//     "referringChannel" => $referringChannel,
+//     "firstConference" => $firstConference,
+//     "referrer" => $referrer
+// );
 
-$db = new DB($host, $db, $username, $password);
+// $db = new DB($host, $db, $username, $password);
 
-// First check to see if user is in the Database
-if ($db->userExists($email, "awlcrwandavirtual")) {
+// // First check to see if user is in the Database
+// if ($db->userExists($email, "awlcrwandavirtual")) {
 
-    // Check to see if the user has paid
-    if ($db->userExistsAndPaid($email, "awlcrwandavirtual")) {
-        echo json_encode("user_exists");
+//     // Check to see if the user has paid
+//     if ($db->userExistsAndPaid($email, "awlcrwandavirtual")) {
+//         echo json_encode("user_exists");
 
-    } else {
+//     } else {
 
-        // User has registered but hasn't paid so initiatlize payment
-        $paystack = new Paystack($paystackKey);
-        // throw an exception if there was a problem completing the request,
-        // else returns an object created from the json response
-        $trx = $paystack->transaction->initialize(
-            [
-            'amount'=> $amount, /* 20 naira */
-            'email'=> $email,
-            'currency' => $currency,
-            'callback_url' => 'https://awlo.org/awlc/rwanda2019/virtualconference/scripts/verify.php',
-            'metadata' => json_encode(
-                [
-                'custom_fields'=> [
-                    [
-                    'display_name'=> "First Name",
-                    'variable_name'=> "first_name",
-                    'value'=> $firstName
-                    ],
-                    [
-                    'display_name'=> "Last Name",
-                    'variable_name'=> "last_name",
-                    'value'=> $lastName
-                    ],
-                    [
-                    'display_name'=> "Mobile Number",
-                    'variable_name'=> "mobile_number",
-                    'value'=> $phone
-                    ]
-                ]
-                ]
-            )
-            ]
-        );
+//         // User has registered but hasn't paid so initiatlize payment
+//         $paystack = new Paystack($paystackKey);
+//         // throw an exception if there was a problem completing the request,
+//         // else returns an object created from the json response
+//         $trx = $paystack->transaction->initialize(
+//             [
+//             'amount'=> $amount, /* 20 naira */
+//             'email'=> $email,
+//             'currency' => $currency,
+//             'callback_url' => 'https://awlo.org/awlc/rwanda2019/virtualconference/scripts/verify.php',
+//             'metadata' => json_encode(
+//                 [
+//                 'custom_fields'=> [
+//                     [
+//                     'display_name'=> "First Name",
+//                     'variable_name'=> "first_name",
+//                     'value'=> $firstName
+//                     ],
+//                     [
+//                     'display_name'=> "Last Name",
+//                     'variable_name'=> "last_name",
+//                     'value'=> $lastName
+//                     ],
+//                     [
+//                     'display_name'=> "Mobile Number",
+//                     'variable_name'=> "mobile_number",
+//                     'value'=> $phone
+//                     ]
+//                 ]
+//                 ]
+//             )
+//             ]
+//         );
 
-        echo json_encode($trx->data->authorization_url);
+//         echo json_encode($trx->data->authorization_url);
 
-    }
+//     }
 
-} else {
+// } else {
 
-    // Insert the user into the database
-    if ($db->insertUser("awlcrwandavirtual", $details)) {
-        $paystack = new Paystack($paystackKey);
-        // throw an exception if there was a problem completing the request,
-        // else returns an object created from the json response
-        $trx = $paystack->transaction->initialize(
-            [
-            'amount'=> $amount, /* 20 naira */
-            'email'=> $email,
-            'currency' => $currency,
-            'callback_url' => 'https://awlo.org/awlc/rwanda2019/virtualconference/scripts/verify.php',
-            'metadata' => json_encode(
-                [
-                'custom_fields'=> [
-                    [
-                    'display_name'=> "First Name",
-                    'variable_name'=> "first_name",
-                    'value'=> $firstName
-                    ],
-                    [
-                    'display_name'=> "Last Name",
-                    'variable_name'=> "last_name",
-                    'value'=> $lastName
-                    ],
-                    [
-                    'display_name'=> "Mobile Number",
-                    'variable_name'=> "mobile_number",
-                    'value'=> $phone
-                    ]
-                ]
-                ]
-            )
-            ]
-        );
+//     // Insert the user into the database
+//     if ($db->insertUser("awlcrwandavirtual", $details)) {
+//         $paystack = new Paystack($paystackKey);
+//         // throw an exception if there was a problem completing the request,
+//         // else returns an object created from the json response
+//         $trx = $paystack->transaction->initialize(
+//             [
+//             'amount'=> $amount, /* 20 naira */
+//             'email'=> $email,
+//             'currency' => $currency,
+//             'callback_url' => 'https://awlo.org/awlc/rwanda2019/virtualconference/scripts/verify.php',
+//             'metadata' => json_encode(
+//                 [
+//                 'custom_fields'=> [
+//                     [
+//                     'display_name'=> "First Name",
+//                     'variable_name'=> "first_name",
+//                     'value'=> $firstName
+//                     ],
+//                     [
+//                     'display_name'=> "Last Name",
+//                     'variable_name'=> "last_name",
+//                     'value'=> $lastName
+//                     ],
+//                     [
+//                     'display_name'=> "Mobile Number",
+//                     'variable_name'=> "mobile_number",
+//                     'value'=> $phone
+//                     ]
+//                 ]
+//                 ]
+//             )
+//             ]
+//         );
 
-        echo json_encode($trx->data->authorization_url);
-    }
-}
+//         echo json_encode($trx->data->authorization_url);
+//     }
+// }
