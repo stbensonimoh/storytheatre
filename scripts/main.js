@@ -47,11 +47,6 @@ document.addEventListener('DOMContentLoaded', e => {
       form.classList.add('was-validated')
     })
 
-    // Get the referrer value from the URL
-    const referrer = window.location.href.slice(
-      window.location.href.indexOf('?') + 1
-    )
-
     // If form doesn't have validation errors
     if (form.checkValidity() === true) {
       e.preventDefault()
@@ -63,8 +58,6 @@ document.addEventListener('DOMContentLoaded', e => {
         'Loading <span class="spinner"></span><i class="fa fa-spinner fa-spin"></i></span>'
 
       const formdata = new FormData(form)
-
-      formdata.append('referrer', referrer)
 
       // initiate a fetch call
       fetch('scripts/paynow.php', {
