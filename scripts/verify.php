@@ -10,8 +10,8 @@
  * @license  MIT https://opensource.org/licenses/MIT
  * @link     https://stbensonimoh.com
  */
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+// error_reporting(E_ALL);
+// ini_set('display_errors', 1);
 require '../config.php';
 require './Paystack.php';
 require './DB.php';
@@ -46,12 +46,12 @@ if ('success' === $trx->data->status) {
     $email = $trx->data->customer->email;
 
     // Update the database with paid
-    if ($db->updatePaid("awlcrwandavirtual", $details, "email", $email)) {
+    if ($db->updatePaid("story_theatre_adio", $details, "email", $email)) {
 
         //Query the database with Customer email to get phone number;
-        if ($db->userExists($email, "awlcrwandavirtual")) {
+        if ($db->userExists($email, "story_theatre_adio")) {
             // Select the user
-            $result = $db->userSelect($email, "awlcrwandavirtual");
+            $result = $db->userSelect($email, "story_theatre_adio");
 
             // get the phone number
             foreach ($result as $key => $value) {
@@ -62,8 +62,15 @@ if ('success' === $trx->data->status) {
         $name = $firstName . " " . $lastName;
         require './emails.php';
 
+        if ($ticketQty > 1) {
+            $people = "people";
+        } else {
+            $people = "person";
+        }
+
         //Send SMS
-        $notify->viaSMS("AWLO Int", "Dear {$firstName} {$lastName}, Thank you for signing up for the online stream of African Women in Leadership Conference Rwanda 2019. Be on the lookout for your login pass in your mailbox on the 3rd of April.", $phone);
+        $notify->viaSMS("GrandmaWura", "Dear {$firstName} {$lastName}, thank you for registering to be a part of this year's Story Theatre with Grandma Wura. Kindly check your email for the ticket.", $phone);
+        $notify->viaSMS("Admin", "Someone just bought the tickets for Story Theatre. Kindly check your email for the details.", "08175039643,08034025880");
 
         /**
          * Add User to the SendPule mailing List
@@ -79,10 +86,11 @@ if ('success' === $trx->data->status) {
             )
         );
 
-        $newsletter->insertIntoList("2328121", $emails);
+        $newsletter->insertIntoList("2335533", $emails);
 
         // Send Email
-        $notify->viaEmail("info@awlo.org", "African Women in Leadership Organisation", $email, $name, $emailBodyDelegate, "Successful Registration for #AWLCRwanda2019");
+        $notify->viaEmail("info@proudafricanroots.com", "Story Theatre with Grandma Wura", $email, $name, $emailBody, "Successful Registration for Story Theatre with Grandma Wura");
+        $notify->viaEmail("info@proudafricanroots.com", "Proud African Roots", "info@proudafricanroots.com", "Admin", $emailBodyAdmin, "Someone just bought the tickets for Story Theatre");
 
         header('Location: ../success.html');
     }

@@ -68,19 +68,15 @@ document.addEventListener('DOMContentLoaded', e => {
           return response.json()
         })
         .then(data => {
-          console.log(data)
-        //   if (data === 'user_exists') {
-        //     swal(
-        //       'Already Registered',
-        //       'You have already registered for the conference.',
-        //       'warning'
-        //     )
-        //     setTimeout(() => {
-        //       window.location = 'https://awlo.org/awlc/inviteafriend'
-        //     }, 3000)
-        //   } else {
-        //     window.location.href = data
-        //   }
+            // console.log(data)
+            if (data === 'user_exists') {
+                swal('Already Registered', 'You have already registered and bought your tickets for the event.', 'warning')
+                setTimeout(() => {
+                    window.location = 'https://proudafricanroots.com'
+                }, 3000)
+            } else {
+                window.location.href = data
+            }
         })
         .catch(error => {
           console.log('The Request Failed', error)

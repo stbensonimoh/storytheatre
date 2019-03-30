@@ -44,40 +44,84 @@ $details = array(
 
 $db = new DB($host, $db, $username, $password);
 
-// Insert the user into the database
-if ($db->insertUser("awlcrwandavirtual", $details)) {
-    $paystack = new Paystack($paystackKey);
-    // throw an exception if there was a problem completing the request,
-    // else returns an object created from the json response
-    $trx = $paystack->transaction->initialize(
-        [
-        'amount'=> $amount, /* 20 naira */
-        'email'=> $email,
-        'currency' => $currency,
-        'callback_url' => 'https://proudafricanroots.com/storytheatre/scripts/verify.php',
-        'metadata' => json_encode(
+// First check to see if user is in the Database
+if ($db->userExists($email, "story_theatre_adio")) {
+    // Check to see if the user has paid
+    if ($db->userExistsAndPaid($email, "story_theatre_adio")) {
+        echo json_encode("user_exists");
+    } else {
+        // User has registered but hasn't paid so initiatlize payment
+        $paystack = new Paystack($paystackKey);
+        // throw an exception if there was a problem completing the request,
+        // else returns an object created from the json response
+        $trx = $paystack->transaction->initialize(
             [
-            'custom_fields'=> [
+            'amount'=> $amount, /* 20 naira */
+            'email'=> $email,
+            'currency' => $currency,
+            'callback_url' => 'https://proudafricanroots.com/storytheatre/scripts/verify.php',
+            'metadata' => json_encode(
                 [
-                'display_name'=> "First Name",
-                'variable_name'=> "first_name",
-                'value'=> $firstName
-                ],
-                [
-                'display_name'=> "Last Name",
-                'variable_name'=> "last_name",
-                'value'=> $lastName
-                ],
-                [
-                'display_name'=> "Mobile Number",
-                'variable_name'=> "mobile_number",
-                'value'=> $phone
+                'custom_fields'=> [
+                    [
+                    'display_name'=> "First Name",
+                    'variable_name'=> "first_name",
+                    'value'=> $firstName
+                    ],
+                    [
+                    'display_name'=> "Last Name",
+                    'variable_name'=> "last_name",
+                    'value'=> $lastName
+                    ],
+                    [
+                    'display_name'=> "Mobile Number",
+                    'variable_name'=> "mobile_number",
+                    'value'=> $phone
+                    ]
                 ]
+                ]
+            )
             ]
-            ]
-        )
-        ]
-    );
+        );
+        echo json_encode($trx->data->authorization_url);
 
-    echo json_encode($trx->data->authorization_url);
+    }
+} else {
+        // Insert the user into the database
+    if ($db->insertUser("story_theatre_adio", $details)) {
+        $paystack = new Paystack($paystackKey);
+        // throw an exception if there was a problem completing the request,
+        // else returns an object created from the json response
+        $trx = $paystack->transaction->initialize(
+            [
+            'amount'=> $amount, /* 20 naira */
+            'email'=> $email,
+            'currency' => $currency,
+            'callback_url' => 'https://proudafricanroots.com/storytheatre/scripts/verify.php',
+            'metadata' => json_encode(
+                [
+                'custom_fields'=> [
+                    [
+                    'display_name'=> "First Name",
+                    'variable_name'=> "first_name",
+                    'value'=> $firstName
+                    ],
+                    [
+                    'display_name'=> "Last Name",
+                    'variable_name'=> "last_name",
+                    'value'=> $lastName
+                    ],
+                    [
+                    'display_name'=> "Mobile Number",
+                    'variable_name'=> "mobile_number",
+                    'value'=> $phone
+                    ]
+                ]
+                ]
+            )
+            ]
+        );
+
+        echo json_encode($trx->data->authorization_url);
+    }
 }
